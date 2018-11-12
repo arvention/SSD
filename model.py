@@ -74,7 +74,7 @@ class SSD(nn.Module):
             output = self.detect(
                 self.softmax(class_preds),
                 loc_preds,
-                self.anchors.type(type(x.data))
+                self.anchors
             )
         else:
             output = (

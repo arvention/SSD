@@ -19,7 +19,7 @@ class Detect(Function):
         self.conf_thresh = conf_thresh
         self.variance = [0.1, 0.2]
 
-    def forward(self, loc_data, conf_data, prior_data):
+    def forward(self, conf_data, loc_data, prior_data):
         """
         Args:
             loc_data: (tensor) Loc preds from loc layers
@@ -44,7 +44,7 @@ class Detect(Function):
             for cl in range(1, self.class_count):
                 c_mask = conf_scores[cl].gt(self.conf_thresh)
                 scores = conf_scores[cl][c_mask]
-                if scores.dim() == 0:
+                if scores.shape[0] == 0:
                     continue
                 l_mask = c_mask.unsqueeze(1).expand_as(decoded_boxes)
                 boxes = decoded_boxes[l_mask].view(-1, 4)

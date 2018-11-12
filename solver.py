@@ -55,6 +55,8 @@ class Solver(object):
         # instantiate anchor boxes
         anchor_boxes = AnchorBox(self.new_size)
         self.anchor_boxes = anchor_boxes.get_boxes()
+        if torch.cuda.is_available() and self.use_gpu:
+            self.anchor_boxes = self.anchor_boxes.cuda()
 
         # instatiate model
         self.model = build_ssd(mode=self.mode,
@@ -252,7 +254,7 @@ class Solver(object):
 
         # timers
         _t = {'im_detect': Timer(), 'misc': Timer()}
-        results_path = osp.join(self.results_save_path,
+        results_path = osp.join(self.result_save_path,
                                 self.version)
         det_file = osp.join(results_path,
                             'detections.pkl')
@@ -270,23 +272,23 @@ class Solver(object):
             for j in range(1, detections.shape[1]):
                 dets = detections[0, j, :]
                 mask = dets[:, 0].gt(0.).expand(5, dets.size(0)).t()
-            dets = torch.masked_select(dets, mask).view(-1, 5)
-            if dets.dim() == 0:
-                continue
-            boxes = dets[:, 1:]
-            boxes[:, 0] *= w
-            boxes[:, 2] *= w
-            boxes[:, 1] *= h
-            boxes[:, 3] *= h
-            scores = dets[:, 0].cpu().numpy()
-            cls_dets = np.hstack((boxes.cpu().numpy(),
-                                  scores[:, np.newaxis])).astype(np.float32,
-                                                                 copy=False)
-            all_boxes[j][i] = cls_dets
+                dets = torch.masked_select(dets, mask).view(-1, 5)
+                if dets.shape[0] == 0:
+                    continue
+                boxes = dets[:, 1:]
+                boxes[:, 0] *= w
+                boxes[:, 2] *= w
+                boxes[:, 1] *= h
+                boxes[:, 3] *= h
+                scores = dets[:, 0].cpu().numpy()
+                cls_dets = np.hstack((boxes.cpu().numpy(),
+                                      scores[:, np.newaxis])).astype(np.float32,
+                                                                     copy=False)
+                all_boxes[j][i] = cls_dets
 
-        print('im_detect: {:d}/{:d} {:.3f}s'.format(i + 1,
-                                                    num_images,
-                                                    detect_time))
+            print('im_detect: {:d}/{:d} {:.3f}s'.format(i + 1,
+                                                        num_images,
+                                                        detect_time))
 
         with open(det_file, 'wb') as f:
             pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
