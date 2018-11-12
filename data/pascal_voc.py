@@ -211,6 +211,7 @@ def voc_ap(rec, prec, use_07_metric=True):
 
 
 def voc_eval(detpath,
+             path,
              annotation_path,
              text_path,
              classname,
@@ -251,7 +252,7 @@ cachedir: Directory for caching the annotations
         # load annots
         recs = {}
         for i, imagename in enumerate(imagenames):
-            recs[imagename] = parse_rec(annotation_path % (imagename))
+            recs[imagename] = parse_rec(annotation_path % (path, imagename))
             if i % 100 == 0:
                 print('Reading annotation for {:d}/{:d}'.format(
                    i + 1, len(imagenames)))
@@ -352,7 +353,7 @@ def do_python_eval(results_path,
                    use_07=True):
     cachedir = osp.join(results_path, 'annotations_cache')
     path = osp.join(dataset.data_path, 'VOC%s' % dataset.image_sets[0][0])
-    annotation_path = dataset.annotation_path % path
+    annotation_path = dataset.annotation_path
     text_path = dataset.text_path % (path, mode)
 
     aps = []
@@ -361,9 +362,14 @@ def do_python_eval(results_path,
     print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
     for i, c in enumerate(VOC_CLASSES):
         filename = osp.join(results_path, c + '.txt')
-        rec, prec, ap = voc_eval(
-           filename, annotation_path, text_path, c, cachedir,
-           ovthresh=0.5, use_07_metric=use_07_metric)
+        rec, prec, ap = voc_eval(filename,
+                                 path,
+                                 annotation_path,
+                                 text_path,
+                                 c,
+                                 cachedir,
+                                 ovthresh=0.5,
+                                 use_07_metric=use_07_metric)
         aps += [ap]
         print('AP for {} = {:.4f}'.format(c, ap))
         with open(os.path.join(results_path, c + '_pr.pkl'), 'wb') as f:

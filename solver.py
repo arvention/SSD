@@ -255,7 +255,7 @@ class Solver(object):
         # timers
         _t = {'im_detect': Timer(), 'misc': Timer()}
         results_path = osp.join(self.result_save_path,
-                                self.version)
+                                self.pretrained_model)
         det_file = osp.join(results_path,
                             'detections.pkl')
 
