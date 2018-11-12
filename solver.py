@@ -40,9 +40,10 @@ class Solver(object):
         if self.pretrained_model:
             self.load_pretrained_model()
         else:
-            weights_path = osp.join(self.model_save_path, self.basenet)
-            vgg_weights = torch.load(weights_path)
-            self.model.base.load_state_dict(vgg_weights)
+            if self.basenet:
+                weights_path = osp.join(self.model_save_path, self.basenet)
+                vgg_weights = torch.load(weights_path)
+                self.model.base.load_state_dict(vgg_weights)
             self.model.extras.apply(fn=self.init_weights)
             self.model.loc_head.apply(fn=self.init_weights)
             self.model.class_head.apply(fn=self.init_weights)
