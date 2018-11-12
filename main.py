@@ -52,12 +52,7 @@ def main(version, config):
     elif config.mode == 'test':
         if config.dataset == 'voc':
             temp_save_path = os.path.join(config.result_save_path,
-                                          config.pretrained_model,
-                                          'ground-truth')
-            mkdir(temp_save_path)
-            temp_save_path = os.path.join(config.result_save_path,
-                                          config.pretrained_model,
-                                          'predicted')
+                                          config.pretrained_model)
             mkdir(temp_save_path)
         elif config.dataset == 'coco':
             temp_save_path = os.path.join(config.result_save_path, version)

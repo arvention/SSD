@@ -1,8 +1,10 @@
 import os
 import os.path as osp
+import numpy as np
 import torch
 import time
 import datetime
+import pickle
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.init as init
@@ -11,6 +13,9 @@ from utils.utils import to_var
 from model import build_ssd
 from loss.loss import get_loss
 from layers.anchor_box import AnchorBox
+from utils.timer import Timer
+
+from data.pascal_voc import save_results as voc_save, do_python_eval
 
 
 class Solver(object):
@@ -239,3 +244,64 @@ class Solver(object):
             print(i, "{:.4f} {:.4f} {:.4f}".format(class_loss.item(),
                                                    loc_loss.item(),
                                                    loss.item()))
+
+    def eval(self, dataset, top_k, threshold):
+        num_images = len(dataset)
+        all_boxes = [[[] for _ in range(num_images)]
+                     for _ in range(self.class_count)]
+
+        # timers
+        _t = {'im_detect': Timer(), 'misc': Timer()}
+        results_path = osp.join(self.results_save_path,
+                                self.version)
+        det_file = osp.join(results_path,
+                            'detections.pkl')
+
+        for i in range(num_images):
+            image, target, h, w = dataset.pull_item(i)
+
+            image = to_var(image.unsqueeze(0), self.use_gpu)
+
+            _t['im_detect'].tic()
+            detections = self.model(image).data
+            detect_time = _t['im_detect'].toc(average=False)
+
+            # skip j = 0 because it is the background class
+            for j in range(1, detections.shape[1]):
+                dets = detections[0, j, :]
+                mask = dets[:, 0].gt(0.).expand(5, dets.size(0)).t()
+            dets = torch.masked_select(dets, mask).view(-1, 5)
+            if dets.dim() == 0:
+                continue
+            boxes = dets[:, 1:]
+            boxes[:, 0] *= w
+            boxes[:, 2] *= w
+            boxes[:, 1] *= h
+            boxes[:, 3] *= h
+            scores = dets[:, 0].cpu().numpy()
+            cls_dets = np.hstack((boxes.cpu().numpy(),
+                                  scores[:, np.newaxis])).astype(np.float32,
+                                                                 copy=False)
+            all_boxes[j][i] = cls_dets
+
+        print('im_detect: {:d}/{:d} {:.3f}s'.format(i + 1,
+                                                    num_images,
+                                                    detect_time))
+
+        with open(det_file, 'wb') as f:
+            pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
+
+        print('Evaluating detections')
+
+        if self.dataset == 'voc':
+            voc_save(all_boxes, dataset, results_path)
+            do_python_eval(results_path, dataset)
+
+    def test(self):
+        """
+        testing process
+        """
+        self.model.eval()
+        self.eval(dataset=self.test_loader.dataset,
+                  top_k=5,
+                  threshold=0.01)
