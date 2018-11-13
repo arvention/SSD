@@ -56,13 +56,10 @@ class Solver(object):
         # instantiate anchor boxes
         anchor_boxes = AnchorBox(self.new_size)
         self.anchor_boxes = anchor_boxes.get_boxes()
-        if torch.cuda.is_available() and self.use_gpu:
-            self.anchor_boxes = self.anchor_boxes.cuda()
 
         # instatiate model
         self.model = build_ssd(mode=self.mode,
                                new_size=self.new_size,
-                               anchors=self.anchor_boxes,
                                class_count=self.class_count)
 
         # instatiate loss criterion
