@@ -16,6 +16,18 @@ def mkdir(directory):
         os.makedirs(directory)
 
 
+def one_hot_embedding(labels, class_count):
+    '''Embedding labels to one-hot.
+    Args:
+      labels: (LongTensor) class labels, sized [N,].
+      class_count: (int) number of classes.
+    Returns:
+      (tensor) encoded labels, sized [N,#classes].
+    '''
+    y = torch.eye(class_count, device=labels.device)  # [D,D]
+    return y[labels.long()]  # [N,D]
+
+
 def show(image, labels, new_size):
 
     transform = transforms.Compose([transforms.ToPILImage()])
