@@ -91,9 +91,11 @@ if __name__ == '__main__':
 
     # loss settings
     parser.add_argument('--loss_config', type=str, default='multibox',
-                        choices=['multibox'])
+                        choices=['multibox', 'focal'])
     parser.add_argument('--threshold', type=float, default=0.5)
     parser.add_argument('--pos_neg_ratio', type=int, default=3)
+    parser.add_argument('--focal_alpha', type=float, default=0.25)
+    parser.add_argument('--focal_gamma', type=int, default=2)
 
     # misc
     parser.add_argument('--mode', type=str, default='train',
