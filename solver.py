@@ -163,7 +163,7 @@ class Solver(object):
         self.optimizer.zero_grad()
 
         # forward pass
-        class_preds, loc_preds, _ = self.model(images)
+        class_preds, loc_preds = self.model(images)
 
         # compute loss
         class_targets = [target[:, -1] for target in targets]
