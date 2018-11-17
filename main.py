@@ -84,6 +84,10 @@ if __name__ == '__main__':
     parser.add_argument('--pretrained_model', type=str,
                         default=None)
 
+    # architecture settings
+    parser.add_argument('--architecture', type=str, default='SSD',
+                        choices=['SSD', 'FSSD'])
+
     # scheduler settings
     parser.add_argument('--sched_milestones', type=list,
                         default=[80000, 100000, 120000])

@@ -10,7 +10,7 @@ import torch.optim as optim
 import torch.nn.init as init
 from utils.utils import to_var
 
-from model import build_ssd
+from arch.arch import get_arch
 from loss.loss import get_loss
 from layers.anchor_box import AnchorBox
 from utils.timer import Timer
@@ -58,9 +58,7 @@ class Solver(object):
         self.anchor_boxes = anchor_boxes.get_boxes()
 
         # instatiate model
-        self.model = build_ssd(mode=self.mode,
-                               new_size=self.new_size,
-                               class_count=self.class_count)
+        self.model = get_arch(config=self.config)
 
         # instatiate loss criterion
         self.criterion = get_loss(config=self.config)
@@ -72,7 +70,7 @@ class Solver(object):
                                    weight_decay=self.weight_decay)
 
         # print network
-        self.print_network(self.model, 'SSD')
+        self.print_network(self.model)
 
         # use gpu if enabled
         if torch.cuda.is_available() and self.use_gpu:
@@ -80,14 +78,13 @@ class Solver(object):
             self.criterion.cuda()
             self.anchor_boxes = self.anchor_boxes.cuda()
 
-    def print_network(self, model, name):
+    def print_network(self, model):
         """
         Prints the structure of the network and the total number of parameters
         """
         num_params = 0
         for p in model.parameters():
             num_params += p.numel()
-        print(name)
         print(model)
         print("The number of parameters: {}".format(num_params))
 
