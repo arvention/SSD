@@ -56,9 +56,12 @@ class Solver(object):
         # instantiate anchor boxes
         anchor_boxes = AnchorBox(self.new_size)
         self.anchor_boxes = anchor_boxes.get_boxes()
+        if torch.cuda.is_available() and self.use_gpu:
+            self.anchor_boxes = self.anchor_boxes.cuda()
 
         # instatiate model
-        self.model = get_arch(config=self.config)
+        self.model = get_arch(config=self.config,
+                              anchors=self.anchors)
 
         # instatiate loss criterion
         self.criterion = get_loss(config=self.config)
@@ -76,7 +79,6 @@ class Solver(object):
         if torch.cuda.is_available() and self.use_gpu:
             self.model.cuda()
             self.criterion.cuda()
-            self.anchor_boxes = self.anchor_boxes.cuda()
 
     def print_network(self, model):
         """

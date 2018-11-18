@@ -62,6 +62,7 @@ class FSSD(nn.Module):
                  fusion_module,
                  pyramid_module,
                  head,
+                 anchors,
                  class_count):
         super(FSSD, self).__init__()
         self.mode = mode
@@ -73,6 +74,7 @@ class FSSD(nn.Module):
 
         self.class_head = nn.ModuleList(head[0])
         self.loc_head = nn.ModuleList(head[1])
+        self.anchors = anchors
         self.class_count = class_count
 
         if mode == 'test':
@@ -126,7 +128,8 @@ class FSSD(nn.Module):
         if self.mode == "test":
             output = self.detect(
                 self.softmax(class_preds),
-                loc_preds
+                loc_preds,
+                self.anchors
             )
         else:
             output = (
@@ -261,7 +264,7 @@ mbox_config = {
 }
 
 
-def build_fssd(mode, new_size, class_count):
+def build_fssd(mode, new_size, anchors, class_count):
 
     base = vgg(config=base_config[str(new_size)],
                in_channels=3)
@@ -278,4 +281,5 @@ def build_fssd(mode, new_size, class_count):
     head = multibox(config=mbox_config[str(new_size)],
                     class_count=class_count)
 
-    return FSSD(mode, base, extras, fusion_module, pyramid_module, head, class_count)
+    return FSSD(mode, base, extras, fusion_module,
+                pyramid_module, head, anchors, class_count)

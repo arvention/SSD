@@ -18,6 +18,7 @@ class SSD(nn.Module):
                  base,
                  extras,
                  head,
+                 anchors,
                  class_count):
         super(SSD, self).__init__()
 
@@ -27,6 +28,7 @@ class SSD(nn.Module):
         self.extras = nn.ModuleList(extras)
         self.class_head = nn.ModuleList(head[0])
         self.loc_head = nn.ModuleList(head[1])
+        self.anchors = anchors
         self.class_count = class_count
 
         if mode == 'test':
@@ -71,7 +73,8 @@ class SSD(nn.Module):
         if self.mode == "test":
             output = self.detect(
                 self.softmax(class_preds),
-                loc_preds
+                loc_preds,
+                self.anchors
             )
         else:
             output = (
@@ -156,7 +159,7 @@ mbox_config = {
 }
 
 
-def build_ssd(mode, new_size, class_count):
+def build_ssd(mode, new_size, anchors, class_count):
 
     base = vgg(config=base_config[str(new_size)],
                in_channels=3)
@@ -168,4 +171,4 @@ def build_ssd(mode, new_size, class_count):
                     config=mbox_config[str(new_size)],
                     class_count=class_count)
 
-    return SSD(mode, base, extras, head, class_count)
+    return SSD(mode, base, extras, head, anchors, class_count)
