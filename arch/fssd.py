@@ -210,7 +210,7 @@ def multibox(config, class_count):
     class_layers = []
     loc_layers = []
 
-    for in_channels, num_anchors in enumerate(config):
+    for in_channels, num_anchors in config:
         class_layers += [nn.Conv2d(in_channels=in_channels,
                                    out_channels=num_anchors * class_count,
                                    kernel_size=3,
