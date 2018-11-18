@@ -61,7 +61,7 @@ class Solver(object):
 
         # instatiate model
         self.model = get_arch(config=self.config,
-                              anchors=self.anchors)
+                              anchors=self.anchor_boxes)
 
         # instatiate loss criterion
         self.criterion = get_loss(config=self.config)
