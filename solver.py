@@ -44,6 +44,8 @@ class Solver(object):
                 weights_path = osp.join(self.model_save_path, self.basenet)
                 vgg_weights = torch.load(weights_path)
                 self.model.base.load_state_dict(vgg_weights)
+            else:
+                self.model.base.apply(fn=self.init_weights)
             self.model.extras.apply(fn=self.init_weights)
             self.model.loc_head.apply(fn=self.init_weights)
             self.model.class_head.apply(fn=self.init_weights)
