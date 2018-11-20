@@ -10,7 +10,7 @@ import torch.optim as optim
 import torch.nn.init as init
 from utils.utils import to_var
 
-from arch.arch import get_arch
+from arch.arch import get_model
 from loss.loss import get_loss
 from layers.anchor_box import AnchorBox
 from utils.timer import Timer
@@ -62,8 +62,8 @@ class Solver(object):
             self.anchor_boxes = self.anchor_boxes.cuda()
 
         # instatiate model
-        self.model = get_arch(config=self.config,
-                              anchors=self.anchor_boxes)
+        self.model = get_model(config=self.config,
+                               anchors=self.anchor_boxes)
 
         # instatiate loss criterion
         self.criterion = get_loss(config=self.config)

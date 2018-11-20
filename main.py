@@ -85,7 +85,7 @@ if __name__ == '__main__':
                         default=None)
 
     # architecture settings
-    parser.add_argument('--architecture', type=str, default='SSD',
+    parser.add_argument('--model', type=str, default='SSD',
                         choices=['SSD', 'FSSD'])
 
     # scheduler settings
