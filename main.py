@@ -118,7 +118,7 @@ if __name__ == '__main__':
                         default='../../data/Coco/')
 
     # path
-    parser.add_argument('--model_save_path', type=str, default='./models')
+    parser.add_argument('--model_save_path', type=str, default='./weights')
     parser.add_argument('--result_save_path', type=str, default='./results')
 
     # step size
