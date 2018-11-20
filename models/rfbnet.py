@@ -217,7 +217,8 @@ def build_rfbnet(mode, new_size, anchors, class_count):
                in_channels=3)
 
     extras = get_extras(config=extras_config[str(new_size)],
-                        in_channels=1024)
+                        in_channels=1024,
+                        size=new_size)
 
     head = multibox(config=mbox_config[str(new_size)],
                     base=base,
@@ -225,4 +226,4 @@ def build_rfbnet(mode, new_size, anchors, class_count):
                     size=new_size,
                     class_count=class_count)
 
-    return RFBNet(mode, base, extras, head, anchors, class_count)
+    return RFBNet(mode, new_size, base, extras, head, anchors, class_count)
