@@ -17,6 +17,7 @@ class BasicConv(nn.Module):
                  bias=True,
                  up_size=0):
         super(BasicConv, self).__init__()
+        self.in_channels = in_channels
         self.out_channels = out_channels
         self.conv = nn.Conv2d(in_channels=in_channels,
                               out_channels=out_channels,
@@ -285,7 +286,7 @@ class BasicRFB_a(nn.Module):
 
         layers = []
 
-        layers += [BasicConv(in_channels=self.in_channnels,
+        layers += [BasicConv(in_channels=self.in_channels,
                              out_channels=(self.inter_channnels // 2),
                              kernel_size=1,
                              stride=1)]
