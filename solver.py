@@ -10,7 +10,7 @@ import torch.optim as optim
 import torch.nn.init as init
 from utils.utils import to_var
 
-from arch.arch import get_model
+from models.model import get_model
 from loss.loss import get_loss
 from layers.anchor_box import AnchorBox
 from utils.timer import Timer

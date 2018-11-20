@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from layers.l2_norm import L2Norm
 from layers.detection import Detect
-from arch.vgg import vgg, base_config
+from models.vgg import vgg, base_config
 
 
 class SSD(nn.Module):
