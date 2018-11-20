@@ -116,17 +116,17 @@ def get_extras(config, in_channels, batch_norm=False):
     return layers
 
 
-def multibox(vgg, extra_layers, config, class_count):
+def multibox(config, base, extra_layers, class_count):
     class_layers = []
     loc_layers = []
     vgg_source = [21, -2]
 
     for k, v in enumerate(vgg_source):
-        class_layers += [nn.Conv2d(in_channels=vgg[v].out_channels,
+        class_layers += [nn.Conv2d(in_channels=base[v].out_channels,
                                    out_channels=config[k] * class_count,
                                    kernel_size=3,
                                    padding=1)]
-        loc_layers += [nn.Conv2d(in_channels=vgg[v].out_channels,
+        loc_layers += [nn.Conv2d(in_channels=base[v].out_channels,
                                  out_channels=config[k] * 4,
                                  kernel_size=3,
                                  padding=1)]
@@ -166,9 +166,9 @@ def build_ssd(mode, new_size, anchors, class_count):
     extras = get_extras(config=extras_config[str(new_size)],
                         in_channels=1024)
 
-    head = multibox(vgg=base,
+    head = multibox(config=mbox_config[str(new_size)],
+                    base=base,
                     extra_layers=extras,
-                    config=mbox_config[str(new_size)],
                     class_count=class_count)
 
     return SSD(mode, base, extras, head, anchors, class_count)
