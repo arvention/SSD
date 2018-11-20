@@ -174,3 +174,152 @@ class BasicRFB(nn.Module):
         y = self.relu(y)
 
         return y
+
+
+class BasicRFB_a(nn.Module):
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 stride=1,
+                 scale=0.1):
+        super(BasicRFB_a, self).__init__()
+
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.stride = stride
+        self.scale = scale
+
+        self.inter_channnels = in_channels // 4
+
+        self.branch0 = self.get_branch0()
+        self.branch1 = self.get_branch1()
+        self.branch2 = self.get_branch2()
+        self.branch3 = self.get_branch3()
+
+        self.conv_linear = BasicConv(in_channels=(4 * self.inter_channnels),
+                                     out_channels=self.out_channels,
+                                     kernel_size=1,
+                                     stride=1,
+                                     relu=False)
+
+        self.shortcut = BasicConv(in_channels=self.in_channels,
+                                  out_channels=self.out_channels,
+                                  kernel_size=1,
+                                  stride=self.stride,
+                                  relu=False)
+
+        self.relu = nn.ReLU(inplace=False)
+
+    def get_branch0(self):
+
+        layers = []
+
+        layers += [BasicConv(in_channels=self.in_channels,
+                             out_channels=self.inter_channnels,
+                             kernel_size=1,
+                             stride=1)]
+
+        layers += [BasicConv(in_channels=self.inter_channnels,
+                             out_channels=self.inter_channnels,
+                             kernel_size=3,
+                             stride=1,
+                             padding=1,
+                             relu=False)]
+
+        return nn.Sequential(*layers)
+
+    def get_branch1(self):
+
+        layers = []
+
+        layers += [BasicConv(in_channels=self.in_channels,
+                             out_channels=self.inter_channnels,
+                             kernel_size=1,
+                             stride=1)]
+
+        layers += [BasicConv(in_channels=self.inter_channnels,
+                             out_channels=self.inter_channnels,
+                             kernel_size=(3, 1),
+                             stride=1,
+                             padding=(1, 0))]
+
+        layers += [BasicConv(in_channels=self.inter_channnels,
+                             out_channels=self.inter_channnels,
+                             kernel_size=3,
+                             stride=1,
+                             padding=3,
+                             dilation=3,
+                             relu=False)]
+
+        return nn.Sequential(*layers)
+
+    def get_branch2(self):
+
+        layers = []
+
+        layers += [BasicConv(in_channels=self.in_channels,
+                             out_channels=self.inter_channnels,
+                             kernel_size=1,
+                             stride=1)]
+
+        layers += [BasicConv(in_channels=self.inter_channnels,
+                             out_channels=self.inter_channnels,
+                             kernel_size=(1, 3),
+                             stride=self.stride,
+                             padding=(0, 1))]
+
+        layers += [BasicConv(in_channels=self.inter_channnels,
+                             out_channels=self.inter_channnels,
+                             kernel_size=3,
+                             stride=1,
+                             padding=3,
+                             dilation=3,
+                             relu=False)]
+
+        return nn.Sequential(*layers)
+
+    def get_branch3(self):
+
+        layers = []
+
+        layers += [BasicConv(in_channels=self.in_channnels,
+                             out_channels=(self.inter_channnels // 2),
+                             kernel_size=1,
+                             stride=1)]
+
+        layers += [BasicConv(in_channels=(self.inter_channnels // 2),
+                             out_channels=(self.inter_channnels // 4 * 3),
+                             kernel_size=(1, 3),
+                             stride=1,
+                             padding=(0, 1))]
+
+        layers += [BasicConv(in_channels=(self.inter_channnels // 4 * 3),
+                             out_channels=self.inter_channnels,
+                             kernel_size=(3, 1),
+                             stride=self.stride,
+                             padding=(1, 0))]
+
+        layers += [BasicConv(in_channels=self.inter_channnels,
+                             out_channels=self.inter_channnels,
+                             kernel_size=3,
+                             stride=1,
+                             padding=5,
+                             dilation=5,
+                             relu=False)]
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        y0 = self.branch0(x)
+        y1 = self.branch1(x)
+        y2 = self.branch2(x)
+        y3 = self.branch3(x)
+
+        y = torch.cat((y0, y1, y2, y3), 1)
+        y = self.conv_linear(y)
+        short = self.shortcut(x)
+        y = y * self.scale + short
+        y = self.relu(y)
+
+        return y
