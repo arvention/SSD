@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
     # architecture settings
     parser.add_argument('--model', type=str, default='SSD',
-                        choices=['SSD', 'FSSD'])
+                        choices=['SSD', 'FSSD', 'RFBNet'])
 
     # scheduler settings
     parser.add_argument('--sched_milestones', type=list,
