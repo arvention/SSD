@@ -203,7 +203,7 @@ def multibox(config, base, extra_layers, size, class_count):
 
 extras_config = {
     '300': [1024, 'S', 512, 'S', 256],
-    '512': [1024, 'S', 512, 'S', 256, 'S', 256,'S',256],
+    '512': [1024, 'S', 512, 'S', 256, 'S', 256, 'S', 256],
 }
 mbox_config = {
     '300': [4, 6, 6, 6, 4, 4],
