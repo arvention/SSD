@@ -36,6 +36,7 @@ class BasicConv(nn.Module):
             self.relu = nn.ReLU(inplace=True)
 
         self.up_sample = None
+        self.up_size = up_size
         if up_size != 0:
             self.up_sample = nn.Upsample(size=(up_size, up_size),
                                          mode='bilinear')
