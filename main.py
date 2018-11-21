@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     # scheduler settings
     parser.add_argument('--warmup', type=str2bool, default=False)
-    parser.add_argument('--warmup_epoch', type=int, default=6)
+    parser.add_argument('--warmup_step', type=int, default=6)
     parser.add_argument('--sched_milestones', type=list,
                         default=[80000, 100000, 120000])
     parser.add_argument('--sched_gamma', type=float, default=0.1)
