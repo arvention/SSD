@@ -83,6 +83,10 @@ if __name__ == '__main__':
     parser.add_argument('--pretrained_model', type=str,
                         default=None)
 
+    # architecture settings
+    parser.add_argument('--model', type=str, default='SSD',
+                        choices=['SSD', 'FSSD', 'RFBNet'])
+
     # step size
     parser.add_argument('--counter', type=str, default='iter',
                         choices=['iter', 'epoch'])
@@ -90,10 +94,6 @@ if __name__ == '__main__':
     parser.add_argument('--num_epochs', type=int, default=250)
     parser.add_argument('--loss_log_step', type=int, default=100)
     parser.add_argument('--model_save_step', type=int, default=4000)
-
-    # architecture settings
-    parser.add_argument('--model', type=str, default='SSD',
-                        choices=['SSD', 'FSSD', 'RFBNet'])
 
     # scheduler settings
     parser.add_argument('--warmup', type=str2bool, default=False)
