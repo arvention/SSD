@@ -106,19 +106,22 @@ class Solver(object):
             init.xavier_uniform_(model.weight.data)
             model.bias.data.zero_()
 
-    def warmup_learning_rate(self, optimizer, i, iters_per_epoch):
-        lr = 1e-6 + (self.lr-1e-6) * i / (iters_per_epoch * 5)
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = lr
-        return lr
-
-    def adjust_learning_rate(self, optimizer, gamma, step):
+    def adjust_learning_rate(self,
+                             optimizer,
+                             gamma,
+                             step,
+                             i=None,
+                             iters_per_epoch=None,
+                             epoch=None):
         """Sets the learning rate to the initial LR decayed by 10 at every
             specified step
         # Adapted from PyTorch Imagenet example:
         # https://github.com/pytorch/examples/blob/master/imagenet/main.py
         """
-        lr = self.lr * (gamma ** (step))
+        if self.warmup and epoch < self.warmup_step:
+            lr = 1e-6 + (self.lr-1e-6) * i / (iters_per_epoch * 5)
+        else:
+            lr = self.lr * (gamma ** (step))
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
 
@@ -242,16 +245,14 @@ class Solver(object):
 
             if e in self.sched_milestones:
                 step_index += 1
-                self.adjust_learning_rate(optimizer=self.optimizer,
-                                          gamma=self.sched_gamma,
-                                          step=step_index)
 
             for i, images, targets in enumerate(tqdm(self.train_loader)):
-
-                if self.warmup and e < self.warmup_step:
-                    self.warmup_learning_rate(optimizer=self.optimizer,
-                                              i=i,
-                                              iters_per_epoch=iters_per_epoch)
+                self.adjust_learning_rate(optimizer=self.optimizer,
+                                          gamma=self.sched_gamma,
+                                          step=step_index,
+                                          i=i,
+                                          iters_per_epoch=iters_per_epoch,
+                                          epoch=e)
 
                 images = to_var(images, self.use_gpu)
                 targets = [to_var(target, self.use_gpu) for target in targets]
