@@ -90,9 +90,9 @@ class RFBNet(nn.Module):
 
     def init_weights(self, model_save_path, basenet):
         if basenet:
-                weights_path = osp.join(model_save_path, basenet)
-                vgg_weights = torch.load(weights_path)
-                self.base.load_state_dict(vgg_weights)
+            weights_path = osp.join(model_save_path, basenet)
+            vgg_weights = torch.load(weights_path)
+            self.base.load_state_dict(vgg_weights)
         else:
             self.base.apply(fn=kaiming_init)
         self.norm.apply(fn=kaiming_init)
