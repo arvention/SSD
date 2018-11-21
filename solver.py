@@ -41,15 +41,7 @@ class Solver(object):
         if self.pretrained_model:
             self.load_pretrained_model()
         else:
-            if self.basenet:
-                weights_path = osp.join(self.model_save_path, self.basenet)
-                vgg_weights = torch.load(weights_path)
-                self.model.base.load_state_dict(vgg_weights)
-            else:
-                self.model.base.apply(fn=self.init_weights)
-            self.model.extras.apply(fn=self.init_weights)
-            self.model.loc_head.apply(fn=self.init_weights)
-            self.model.class_head.apply(fn=self.init_weights)
+            self.model.init_weights(self.model_save_path, self.basenet)
 
     def build_model(self):
         """
@@ -100,11 +92,6 @@ class Solver(object):
         self.model.load_state_dict(torch.load(os.path.join(
             self.model_save_path, '{}.pth'.format(self.pretrained_model))))
         print('loaded trained model ver {}'.format(self.pretrained_model))
-
-    def init_weights(self, model):
-        if isinstance(model, nn.Conv2d):
-            init.xavier_uniform_(model.weight.data)
-            model.bias.data.zero_()
 
     def adjust_learning_rate(self,
                              optimizer,

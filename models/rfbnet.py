@@ -1,9 +1,11 @@
 import os
+import os.path as osp
 import torch
 import torch.nn as nn
 from layers.detection import Detect
 from models.vgg import vgg, base_config
 from layers.block import BasicConv, BasicRFB, BasicRFB_a
+from utils.init import kaiming_init
 
 
 class RFBNet(nn.Module):
@@ -85,6 +87,18 @@ class RFBNet(nn.Module):
                 loc_preds
             )
         return output
+
+    def init_weights(self, model_save_path, basenet):
+        if basenet:
+                weights_path = osp.join(model_save_path, basenet)
+                vgg_weights = torch.load(weights_path)
+                self.base.load_state_dict(vgg_weights)
+        else:
+            self.base.apply(fn=kaiming_init)
+        self.norm.apply(fn=kaiming_init)
+        self.extras.apply(fn=kaiming_init)
+        self.class_head.apply(fn=kaiming_init)
+        self.loc_head.apply(fn=kaiming_init)
 
     def load_weights(self, base_file):
         other, ext = os.path.splitext(base_file)

@@ -1,10 +1,12 @@
 import os
+import os.path as osp
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from layers.l2_norm import L2Norm
 from layers.detection import Detect
 from models.vgg import vgg, base_config
+from utils.init import xavier_init
 
 
 class SSD(nn.Module):
@@ -82,6 +84,17 @@ class SSD(nn.Module):
                 loc_preds
             )
         return output
+
+    def init_weights(self, model_save_path, basenet):
+        if basenet:
+                weights_path = osp.join(model_save_path, basenet)
+                vgg_weights = torch.load(weights_path)
+                self.base.load_state_dict(vgg_weights)
+        else:
+            self.base.apply(fn=xavier_init)
+        self.extras.apply(fn=xavier_init)
+        self.class_head.apply(fn=xavier_init)
+        self.loc_head.apply(fn=xavier_init)
 
     def load_weights(self, base_file):
         other, ext = os.path.splitext(base_file)
