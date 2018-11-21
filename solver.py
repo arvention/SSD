@@ -246,7 +246,7 @@ class Solver(object):
             if e in self.sched_milestones:
                 step_index += 1
 
-            for i, images, targets in enumerate(tqdm(self.train_loader)):
+            for i, (images, targets) in enumerate(tqdm(self.train_loader)):
                 self.adjust_learning_rate(optimizer=self.optimizer,
                                           gamma=self.sched_gamma,
                                           step=step_index,
