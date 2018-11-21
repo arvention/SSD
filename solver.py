@@ -106,6 +106,12 @@ class Solver(object):
             init.xavier_uniform_(model.weight.data)
             model.bias.data.zero_()
 
+    def warmup_learning_rate(self, optimizer, i, iters_per_epoch):
+        lr = 1e-6 + (self.lr-1e-6) * i / (iters_per_epoch * 5)
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
+        return lr
+
     def adjust_learning_rate(self, optimizer, gamma, step):
         """Sets the learning rate to the initial LR decayed by 10 at every
             specified step
@@ -228,11 +234,25 @@ class Solver(object):
         self.save_model(i)
 
     def train_epoch(self, start):
+        step_index = 0
         start_time = time.time()
+        iters_per_epoch = len(self.train_loader)
 
         for e in range(start, self.num_epochs):
 
-            for images, targets in enumerate(tqdm(self.train_loader)):
+            if e in self.sched_milestones:
+                step_index += 1
+                self.adjust_learning_rate(optimizer=self.optimizer,
+                                          gamma=self.sched_gamma,
+                                          step=step_index)
+
+            for i, images, targets in enumerate(tqdm(self.train_loader)):
+
+                if self.warmup and e < self.warmup_step:
+                    self.warmup_learning_rate(optimizer=self.optimizer,
+                                              i=i,
+                                              iters_per_epoch=iters_per_epoch)
+
                 images = to_var(images, self.use_gpu)
                 targets = [to_var(target, self.use_gpu) for target in targets]
 
