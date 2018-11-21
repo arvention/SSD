@@ -8,6 +8,7 @@ import pickle
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.init as init
+from tqdm import tqdm
 from utils.utils import to_var
 
 from models.model import get_model
@@ -117,27 +118,28 @@ class Solver(object):
 
     def print_loss_log(self,
                        start_time,
-                       cur_iter,
+                       cur,
+                       total,
                        class_loss,
                        loc_loss,
                        loss):
         """
         Prints the loss and elapsed time for each epoch
         """
-        total_iter = self.num_iterations
 
         elapsed = time.time() - start_time
-        total_time = (total_iter - cur_iter) * elapsed / (cur_iter + 1)
+        total_time = (total - cur) * elapsed / (cur + 1)
 
         total_time = str(datetime.timedelta(seconds=total_time))
         elapsed = str(datetime.timedelta(seconds=elapsed))
 
-        log = "Elapsed {} -- {}, Iter [{}/{}]\n" \
+        log = "Elapsed {} -- {}, {} [{}/{}]\n" \
               "class_loss: {:.4f}, loc_loss: {:.4f}, " \
               "loss: {:.4f}".format(elapsed,
                                     total_time,
-                                    cur_iter + 1,
-                                    total_iter,
+                                    self.counter,
+                                    cur + 1,
+                                    total,
                                     class_loss.item(),
                                     loc_loss.item(),
                                     loss.item())
@@ -185,26 +187,11 @@ class Solver(object):
         # return loss
         return class_loss, loc_loss, loss
 
-    def train(self):
-        """
-        training process
-        """
-
-        # set model in training mode
-        self.model.train()
-
-        self.losses = []
+    def train_iter(self, start):
         step_index = 0
-
-        # start with a trained model if exists
-        if self.pretrained_model:
-            start = int(self.pretrained_model.split('/')[-1])
-        else:
-            start = 0
-
-        # start training
         start_time = time.time()
         batch_iterator = iter(self.train_loader)
+
         for i in range(start, self.num_iterations):
 
             if i in self.sched_milestones:
@@ -227,7 +214,8 @@ class Solver(object):
             # print out loss log
             if (i + 1) % self.loss_log_step == 0:
                 self.print_loss_log(start_time=start_time,
-                                    cur_iter=i,
+                                    cur=i,
+                                    total=self.num_iterations,
                                     class_loss=class_loss,
                                     loc_loss=loc_loss,
                                     loss=loss)
@@ -238,6 +226,54 @@ class Solver(object):
                 self.save_model(i)
 
         self.save_model(i)
+
+    def train_epoch(self, start):
+        start_time = time.time()
+
+        for e in range(start, self.num_epochs):
+
+            for images, targets in enumerate(tqdm(self.train_loader)):
+                images = to_var(images, self.use_gpu)
+                targets = [to_var(target, self.use_gpu) for target in targets]
+
+                class_loss, loc_loss, loss = self.model_step(images, targets)
+
+            # print out loss log
+            if (e + 1) % self.loss_log_step == 0:
+                self.print_loss_log(start_time=start_time,
+                                    cur=e,
+                                    total=self.num_epochs,
+                                    class_loss=class_loss,
+                                    loc_loss=loc_loss,
+                                    loss=loss)
+                self.losses.append([e, class_loss, loc_loss, loss])
+
+            # save model
+            if (e + 1) % self.model_save_step == 0:
+                self.save_model(e)
+
+        self.save_model(e)
+
+    def train(self):
+        """
+        training process
+        """
+
+        # set model in training mode
+        self.model.train()
+
+        self.losses = []
+
+        # start with a trained model if exists
+        if self.pretrained_model:
+            start = int(self.pretrained_model.split('/')[-1])
+        else:
+            start = 0
+
+        if self.counter == 'iter':
+            self.train_iter(start)
+        elif self.counter == 'epoch':
+            self.train_epoch(start)
 
         # print losses
         print('\n--Losses--')

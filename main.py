@@ -77,12 +77,19 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight_decay', type=float, default=5e-4)
-    parser.add_argument('--num_iterations', type=int, default=120000)
-    parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--basenet', type=str,
                         default='vgg16_reducedfc.pth')
     parser.add_argument('--pretrained_model', type=str,
                         default=None)
+
+    # step size
+    parser.add_argument('--counter', type=str, default='iter',
+                        choices=['iter', 'epoch'])
+    parser.add_argument('--num_iterations', type=int, default=120000)
+    parser.add_argument('--num_epochs', type=int, default=250)
+    parser.add_argument('--loss_log_step', type=int, default=100)
+    parser.add_argument('--model_save_step', type=int, default=4000)
 
     # architecture settings
     parser.add_argument('--model', type=str, default='SSD',
@@ -120,10 +127,6 @@ if __name__ == '__main__':
     # path
     parser.add_argument('--model_save_path', type=str, default='./weights')
     parser.add_argument('--result_save_path', type=str, default='./results')
-
-    # step size
-    parser.add_argument('--loss_log_step', type=int, default=100)
-    parser.add_argument('--model_save_step', type=int, default=4000)
 
     config = parser.parse_args()
 
