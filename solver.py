@@ -5,9 +5,7 @@ import torch
 import time
 import datetime
 import pickle
-import torch.nn as nn
 import torch.optim as optim
-import torch.nn.init as init
 from tqdm import tqdm
 from utils.utils import to_var
 
