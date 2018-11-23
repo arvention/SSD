@@ -1,6 +1,7 @@
 from models.ssd import build_ssd
 from models.fssd import build_fssd
 from models.rfbnet import build_rfbnet
+from models.shuffle_ssd import build_shuffle_ssd
 
 
 def get_model(config, anchors):
@@ -27,5 +28,11 @@ def get_model(config, anchors):
                              new_size=config['new_size'],
                              anchors=anchors,
                              class_count=config['class_count'])
+
+    elif config['model'] == 'ShuffleSSD':
+        model = build_shuffle_ssd(mode=config['mode'],
+                                  new_size=config['new_size'],
+                                  anchors=anchors,
+                                  class_count=config['class_count'])
 
     return model

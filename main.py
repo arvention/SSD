@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     # architecture settings
     parser.add_argument('--model', type=str, default='SSD',
-                        choices=['SSD', 'FSSD', 'RFBNet'])
+                        choices=['SSD', 'FSSD', 'RFBNet', 'ShuffleSSD'])
 
     # step size
     parser.add_argument('--counter', type=str, default='iter',
