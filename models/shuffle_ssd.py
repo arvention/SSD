@@ -170,7 +170,8 @@ def get_fusion_module(vgg, extras):
 
     layers += [BasicConv(in_channels=extras[-1].out_channels,
                          out_channels=512,
-                         kernel_size=1)]
+                         kernel_size=1,
+                         padding=1)]
 
     return layers
 
