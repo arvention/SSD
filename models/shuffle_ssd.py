@@ -159,19 +159,16 @@ def get_fusion_module(vgg, extras):
                              BasicConv(in_channels=256,
                                        out_channels=512,
                                        kernel_size=2,
-                                       stride=2,
-                                       padding=1))]
+                                       stride=2))]
     # fc_7
     layers += [BasicConv(in_channels=vgg[-2].out_channels,
                          out_channels=512,
                          kernel_size=2,
-                         stride=2,
-                         padding=1)]
+                         stride=2)]
 
     layers += [BasicConv(in_channels=extras[-1].out_channels,
                          out_channels=512,
-                         kernel_size=1,
-                         padding=1)]
+                         kernel_size=1)]
 
     return layers
 
@@ -188,11 +185,11 @@ def get_pyramid_module(config):
                                        stride=2),
                              nn.PixelShuffle(upscale_factor=4))]
 
-    layers += [nn.Sequential(BasicConv(in_channels=192,
+    layers += [nn.Sequential(BasicConv(in_channels=96,
                                        out_channels=config,
                                        kernel_size=2,
                                        stride=2),
-                             nn.PixelShuffle(upscale_factor=3))]
+                             nn.PixelShuffle(upscale_factor=4))]
 
     layers += [BasicConv(in_channels=config,
                          out_channels=256,
@@ -240,12 +237,12 @@ pyramid_config = {
 }
 mbox_config = {
     '300': [(384, 6),
-            (192, 6),
-            (128, 6),
+            (92, 6),
+            (92, 6),
             (256, 6),
             (256, 6),
-            (256, 6),
-            (256, 6)]
+            (256, 4),
+            (256, 4)]
 }
 
 
