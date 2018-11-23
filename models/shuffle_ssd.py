@@ -152,15 +152,15 @@ def get_fusion_module(vgg, extras):
 
     layers = []
     # conv4_3
-    layers += [nn.Sequential([BasicConv(in_channels=vgg[24].out_channels,
-                                        out_channels=256,
-                                        kernel_size=2,
-                                        stride=2),
-                              BasicConv(in_channels=256,
-                                        out_channels=512,
-                                        kernel_size=2,
-                                        stride=2,
-                                        padding=1)])]
+    layers += [nn.Sequential(BasicConv(in_channels=vgg[24].out_channels,
+                                       out_channels=256,
+                                       kernel_size=2,
+                                       stride=2),
+                             BasicConv(in_channels=256,
+                                       out_channels=512,
+                                       kernel_size=2,
+                                       stride=2,
+                                       padding=1))]
     # fc_7
     layers += [BasicConv(in_channels=vgg[-2].out_channels,
                          out_channels=512,
@@ -181,17 +181,17 @@ def get_pyramid_module(config):
 
     layers += [nn.PixelShuffle(upscale_factor=2)]
 
-    layers += [nn.Sequential([BasicConv(in_channels=384,
-                                        out_channels=config,
-                                        kernel_size=2,
-                                        stride=2),
-                              nn.PixelShuffle(upscale_factor=4)])]
+    layers += [nn.Sequential(BasicConv(in_channels=384,
+                                       out_channels=config,
+                                       kernel_size=2,
+                                       stride=2),
+                             nn.PixelShuffle(upscale_factor=4))]
 
-    layers += [nn.Sequential([BasicConv(in_channels=192,
-                                        out_channels=config,
-                                        kernel_size=2,
-                                        stride=2),
-                              nn.PixelShuffle(upscale_factor=3)])]
+    layers += [nn.Sequential(BasicConv(in_channels=192,
+                                       out_channels=config,
+                                       kernel_size=2,
+                                       stride=2),
+                             nn.PixelShuffle(upscale_factor=3))]
 
     layers += [BasicConv(in_channels=config,
                          out_channels=256,
