@@ -3,25 +3,26 @@ from math import sqrt
 
 
 anchors_config = {
-    '300': [[8, 16, 32, 64, 100, 300],
+    'SSD': [[8, 16, 32, 64, 100, 300],
             [38, 19, 10, 5, 3, 1],
             [[2], [2, 3], [2, 3], [2, 3], [2], [2]]],
-    '512': [[8, 16, 32, 64, 128, 256, 512],
-            [],
-            [[2], [2, 3], [2, 3], [2, 3], [2, 3], [2], [2]]]
+    'ShuffleSSD': [[5, 7.5, 15, 32, 64, 100, 300],
+                   [60, 40, 20, 10, 5, 3, 1],
+                   [[2, 3], [2, 3], [2, 3], [2, 3], [2, 3], [2], [2]]]
 }
 
 
 class AnchorBox(object):
 
     def __init__(self,
-                 new_size):
+                 new_size,
+                 config):
         super(AnchorBox, self).__init__()
 
         self.new_size = new_size
-        self.steps = anchors_config[str(new_size)][0]
-        self.map_sizes = anchors_config[str(new_size)][1]
-        self.aspect_ratios = anchors_config[str(new_size)][2]
+        self.steps = anchors_config[config][0]
+        self.map_sizes = anchors_config[config][1]
+        self.aspect_ratios = anchors_config[config][2]
 
         self.scales = self.get_scales()
 
