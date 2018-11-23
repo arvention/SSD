@@ -204,7 +204,8 @@ def get_pyramid_module(config):
     layers += [BasicConv(in_channels=256,
                          out_channels=256,
                          kernel_size=2,
-                         stride=2)]
+                         stride=2,
+                         padding=1)]
     layers += [BasicConv(in_channels=256,
                          out_channels=256,
                          kernel_size=2,
