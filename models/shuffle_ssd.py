@@ -68,15 +68,21 @@ class ShuffleSSD(nn.Module):
         features = torch.cat(features, 1)  # 10x10x(512*3)
         x = self.bn(features)
 
+        up = []
+        down = []
         feature_pyramid = []
         y = x
         for i, _ in enumerate(self.pyramid_module):
             if i < 3:
                 y = self.pyramid_module[i](y)
-                feature_pyramid.append(y)
+                up.append(y)
             else:
                 x = self.pyramid_module[i](x)
-                feature_pyramid.append(x)
+                down.append(x)
+
+        up.reverse()
+        feature_pyramid.extend(up)
+        feature_pyramid.extend(down)
 
         # apply multibox head to sources
         for (x, c, l) in zip(feature_pyramid, self.class_head, self.loc_head):
@@ -236,9 +242,9 @@ pyramid_config = {
     '300': (512 * 3)
 }
 mbox_config = {
-    '300': [(384, 6),
+    '300': [(96, 6),
             (96, 6),
-            (96, 6),
+            (384, 6),
             (256, 6),
             (256, 6),
             (256, 4),
