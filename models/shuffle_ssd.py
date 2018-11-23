@@ -62,7 +62,7 @@ class ShuffleSSD(nn.Module):
         sources.append(x)
 
         features = []
-        for i, layer in enumerate(self.get_fusion_module):
+        for i, layer in enumerate(self.fusion_module):
             features.append(layer(sources[i]))
 
         features = torch.cat(features, 1)  # 10x10x(512*3)
