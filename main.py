@@ -73,7 +73,7 @@ if __name__ == '__main__':
     parser.add_argument('--new_size', type=int, default=300)
     parser.add_argument('--means', type=tuple, default=(104, 117, 123))
     parser.add_argument('--anchor_config', type=str, default='SSD',
-                        choices=['SSD', 'ShuffleSSD'])
+                        choices=['SSD', 'SSD-512', 'ShuffleSSD'])
 
     # training settings
     parser.add_argument('--lr', type=float, default=1e-3)
