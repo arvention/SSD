@@ -29,7 +29,7 @@ class ShuffleSSD(nn.Module):
         self.base = nn.ModuleList(base)
         self.extras = nn.ModuleList(extras)
         self.fusion_module = nn.ModuleList(fusion_module)
-        self.bn = nn.BatchNorm2d(num_features=(512 * len(self.fusion_module)))
+        self.bn = nn.BatchNorm2d(num_features=(512 + 128 + 32))
         self.pyramid_module = nn.ModuleList(pyramid_module)
 
         self.class_head = nn.ModuleList(head[0])
@@ -68,21 +68,10 @@ class ShuffleSSD(nn.Module):
         features = torch.cat(features, 1)  # 10x10x(512*3)
         x = self.bn(features)
 
-        up = []
-        down = []
         feature_pyramid = []
-        y = x
         for i, _ in enumerate(self.pyramid_module):
-            if i < 3:
-                y = self.pyramid_module[i](y)
-                up.append(y)
-            else:
-                x = self.pyramid_module[i](x)
-                down.append(x)
-
-        up.reverse()
-        feature_pyramid.extend(up)
-        feature_pyramid.extend(down)
+            x = self.pyramid_module[i](x)
+            feature_pyramid.append(x)
 
         # apply multibox head to sources
         for (x, c, l) in zip(feature_pyramid, self.class_head, self.loc_head):
@@ -154,27 +143,29 @@ def get_extras(config, in_channels, batch_norm=False):
     return layers
 
 
-def get_fusion_module(vgg, extras):
+def get_fusion_module(config, vgg, extras):
 
     layers = []
     # conv4_3
-    layers += [nn.Sequential(BasicConv(in_channels=vgg[24].out_channels,
-                                       out_channels=256,
-                                       kernel_size=2,
-                                       stride=2),
-                             BasicConv(in_channels=256,
-                                       out_channels=512,
-                                       kernel_size=2,
-                                       stride=2))]
+    layers += [BasicConv(in_channels=vgg[24].out_channels,
+                         out_channels=config[0][0],
+                         kernel_size=config[0][1],
+                         stride=config[0][2],
+                         padding=config[0][3])]
     # fc_7
-    layers += [BasicConv(in_channels=vgg[-2].out_channels,
-                         out_channels=512,
-                         kernel_size=2,
-                         stride=2)]
+    layers += [nn.Sequential(BasicConv(in_channels=vgg[-2].out_channels,
+                                       out_channels=config[1][0],
+                                       kernel_size=config[1][1],
+                                       stride=config[1][2],
+                                       padding=config[1][3]),
+                             nn.PixelShuffle(upscale_factor=2))]
 
-    layers += [BasicConv(in_channels=extras[-1].out_channels,
-                         out_channels=512,
-                         kernel_size=1)]
+    layers += [nn.Sequential(BasicConv(in_channels=extras[-1].out_channels,
+                                       out_channels=config[2][0],
+                                       kernel_size=config[2][1],
+                                       stride=config[2][2],
+                                       padding=config[2][3]),
+                             nn.PixelShuffle(upscale_factor=4))]
 
     return layers
 
@@ -183,38 +174,12 @@ def get_pyramid_module(config):
 
     layers = []
 
-    layers += [nn.PixelShuffle(upscale_factor=2)]
-
-    layers += [nn.Sequential(BasicConv(in_channels=384,
-                                       out_channels=config,
-                                       kernel_size=2,
-                                       stride=2),
-                             nn.PixelShuffle(upscale_factor=4))]
-
-    layers += [nn.Sequential(BasicConv(in_channels=96,
-                                       out_channels=config,
-                                       kernel_size=2,
-                                       stride=2),
-                             nn.PixelShuffle(upscale_factor=4))]
-
-    layers += [BasicConv(in_channels=config,
-                         out_channels=256,
-                         kernel_size=1,
-                         stride=1)]
-    layers += [BasicConv(in_channels=256,
-                         out_channels=256,
-                         kernel_size=2,
-                         stride=2,
-                         padding=1)]
-    layers += [BasicConv(in_channels=256,
-                         out_channels=256,
-                         kernel_size=2,
-                         stride=2,
-                         padding=1)]
-    layers += [BasicConv(in_channels=256,
-                         out_channels=256,
-                         kernel_size=2,
-                         stride=2)]
+    for layer in config:
+        layers += [BasicConv(in_channels=layer[0],
+                             out_channels=layer[1],
+                             kernel_size=layer[2],
+                             stride=layer[3],
+                             padding=layer[4])]
 
     return layers
 
@@ -237,15 +202,45 @@ def multibox(config, class_count):
 
 
 extras_config = {
-    '300': [256, 512, 128, 'S', 256]
+    '300': [256, 512, 128, 'S', 256],
+    '512': [256, 512, 128, 'S', 256]
 }
+
+fusion_config = {
+    '300': [[512, 3, 1, 0],
+            [512, 2, 1, 0],
+            [512, 1, 1, 0]],
+    '512': [[512, 3, 1, 1],
+            [512, 3, 1, 1],
+            [512, 2, 1, 1]]
+}
+
 pyramid_config = {
-    '300': (512 * 3)
+    '300': [[(512 + 128 + 32), 512, 3, 1, 1],
+            [512, 512, 3, 2, 1],
+            [512, 256, 3, 2, 1],
+            [256, 256, 3, 2, 1],
+            [256, 256, 3, 1, 0],
+            [256, 256, 3, 1, 0]],
+
+    '512': [[(512 + 128 + 32), 512, 3, 1, 1],
+            [512, 512, 3, 2, 1],
+            [512, 256, 3, 2, 1],
+            [256, 256, 3, 2, 1],
+            [256, 256, 3, 2, 1],
+            [256, 256, 3, 2, 1],
+            [256, 256, 2, 1, 0]]
 }
 mbox_config = {
-    '300': [(96, 6),
-            (96, 6),
-            (384, 6),
+    '300': [(512, 6),
+            (512, 6),
+            (256, 6),
+            (256, 6),
+            (256, 4),
+            (256, 4)],
+    '512': [(512, 6),
+            (512, 6),
+            (256, 6),
             (256, 6),
             (256, 6),
             (256, 4),
@@ -261,7 +256,8 @@ def build_shuffle_ssd(mode, new_size, anchors, class_count):
     extras = get_extras(config=extras_config[str(new_size)],
                         in_channels=1024)
 
-    fusion_module = get_fusion_module(vgg=base,
+    fusion_module = get_fusion_module(config=fusion_config[str(new_size)],
+                                      vgg=base,
                                       extras=extras)
 
     pyramid_module = get_pyramid_module(config=pyramid_config[str(new_size)])
