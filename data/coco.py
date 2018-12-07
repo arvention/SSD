@@ -49,6 +49,7 @@ class Coco(Dataset):
 
             self.indices = self.dataset.getImgIds()
             self.ids = []
+            self.annotations = []
             ids = [self.get_path(data_name, index) for index in self.indices]
             self.ids.extend(ids)
 
