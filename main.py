@@ -125,7 +125,8 @@ if __name__ == '__main__':
                         default='../../data/PascalVOC/')
 
     # coco dataset
-    parser.add_argument('--coco_dataset', type=str, default='2014')
+    parser.add_argument('--coco_config', type=str, default='2014',
+                        choices=['2014', '2017'])
     parser.add_argument('--coco_data_path', type=str,
                         default='../../data/Coco/')
 

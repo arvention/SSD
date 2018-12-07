@@ -1,12 +1,20 @@
 import torch
 from torch.utils.data import DataLoader
 from data.pascal_voc import PascalVOC
+from data.coco import Coco
 from data.augmentations import Augmentations, BaseTransform
 
 
 VOC_CONFIG = {
     '0712': ([('2007', 'trainval'), ('2012', 'trainval')],
              [('2007', 'test')])
+}
+
+COCO_CONFIG = {
+    '2014': ([('2014', 'train')],
+             [('2014'), 'val']),
+    '2017': ([('2017', 'train')],
+             [('2017', 'val')])
 }
 
 
@@ -51,6 +59,20 @@ def get_loader(config):
                                      new_size=new_size,
                                      mode=config.mode,
                                      image_transform=image_transform)
+
+    elif config.dataset == 'coco':
+        coco_config = COCO_CONFIG[config.coco_config]
+        if config.mode == 'train':
+            image_transform = Augmentations(new_size, means)
+            train_dataset = Coco(data_path=config.coco_data_path,
+                                 image_sets=coco_config[0],
+                                 image_transform=image_transform)
+
+        elif config.mode == 'test':
+            image_transform = BaseTransform(new_size, means)
+            test_dataset = Coco(data_path=config.coco_data_path,
+                                image_sets=coco_config[1],
+                                image_transform=image_transform)
 
     if train_dataset is not None:
         train_loader = DataLoader(dataset=train_dataset,
