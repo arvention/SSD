@@ -8,8 +8,8 @@ import os.path as osp
 import torch
 from torch.utils.data import Dataset
 
-from tools.pycocotools.coco import COCO
-from tools.pycocotools.cocoeval import COCOeval
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
 
 
 class Coco(Dataset):
