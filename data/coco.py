@@ -17,12 +17,10 @@ class Coco(Dataset):
     def __init__(self,
                  data_path,
                  image_sets,
-                 dataset_name,
                  image_transform,
                  target_transform=None):
         self.data_path = data_path
         self.image_sets = image_sets
-        self.dataset_name = dataset_name
         self.image_transform = image_transform
         self.target_transform = target_transform
         self.view_map = {
