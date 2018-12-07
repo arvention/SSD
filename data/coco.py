@@ -151,9 +151,15 @@ class Coco(Dataset):
             target = self.target_transform(target)
 
         if self.image_transform is not None:
-            image, target = self.image_transform(image, target)
+            target = np.array(target)
+            boxes = target[:, :4]
+            labels = target[:, 4]
+            image, boxes, labels = self.image_transform(image, boxes, labels)
+            # to rgb
+            image = image[:, :, (2, 1, 0)]
+            target = np.hstack((boxes, np.expand_dims(labels, axis=1)))
 
-        return image, target
+        return torch.from_numpy(image).permute(2, 0, 1), target,
 
     def pull_image(self, index):
         img_id = self.ids[index]
