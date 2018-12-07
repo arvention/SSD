@@ -69,7 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--input_channels', type=int, default=3)
     parser.add_argument('--class_count', type=int, default=21)
     parser.add_argument('--dataset', type=str, default='voc',
-                        choices=['voc'])
+                        choices=['voc', 'coco'])
     parser.add_argument('--new_size', type=int, default=300)
     parser.add_argument('--means', type=tuple, default=(104, 117, 123))
     parser.add_argument('--anchor_config', type=str, default='SSD',
