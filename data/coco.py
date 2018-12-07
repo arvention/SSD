@@ -79,6 +79,7 @@ class Coco(Dataset):
             prefix = 'image_info'
 
         annotation_file = osp.join(self.data_path,
+                                   'annotations',
                                    prefix + '_' + name + '.json')
 
         return annotation_file
