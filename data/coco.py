@@ -151,7 +151,7 @@ class Coco(Dataset):
             target = self.target_transform(target)
 
         if self.image_transform is not None:
-            image, target = self.preproc(image, target)
+            image, target = self.image_transform(image, target)
 
         return image, target
 
