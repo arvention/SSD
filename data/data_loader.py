@@ -65,13 +65,13 @@ def get_loader(config):
         if config.mode == 'train':
             image_transform = Augmentations(new_size, means)
             train_dataset = Coco(data_path=config.coco_data_path,
-                                 image_sets=coco_config[0],
+                                 image_set=coco_config[0],
                                  image_transform=image_transform)
 
         elif config.mode == 'test':
             image_transform = BaseTransform(new_size, means)
             test_dataset = Coco(data_path=config.coco_data_path,
-                                image_sets=coco_config[1],
+                                image_set=coco_config[1],
                                 image_transform=image_transform)
 
     if train_dataset is not None:
