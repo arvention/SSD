@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 from data.pascal_voc import PascalVOC
-from data.coco import Coco, CocoAnnotationTransform
+from data.coco import Coco
 from data.coco import CocoAnnotationTransform as coco_annotation
 from data.augmentations import Augmentations, BaseTransform
 
