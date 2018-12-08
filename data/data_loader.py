@@ -1,7 +1,8 @@
 import torch
 from torch.utils.data import DataLoader
 from data.pascal_voc import PascalVOC
-from data.coco import Coco
+from data.coco import Coco, CocoAnnotationTransform
+from data.coco import CocoAnnotationTransform as coco_annotation
 from data.augmentations import Augmentations, BaseTransform
 
 
@@ -62,17 +63,20 @@ def get_loader(config):
 
     elif config.dataset == 'coco':
         coco_config = COCO_CONFIG[config.coco_config]
+        target_transform = coco_annotation(data_path=config.coco_data_path)
         if config.mode == 'train':
             image_transform = Augmentations(new_size, means)
             train_dataset = Coco(data_path=config.coco_data_path,
                                  image_set=coco_config[0],
-                                 image_transform=image_transform)
+                                 image_transform=image_transform,
+                                 target_transform=target_transform)
 
         elif config.mode == 'test':
             image_transform = BaseTransform(new_size, means)
             test_dataset = Coco(data_path=config.coco_data_path,
                                 image_set=coco_config[1],
-                                image_transform=image_transform)
+                                image_transform=image_transform,
+                                target_transform=target_transform)
 
     if train_dataset is not None:
         train_loader = DataLoader(dataset=train_dataset,

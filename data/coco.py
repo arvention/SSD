@@ -60,7 +60,7 @@ class Coco(Dataset):
                  data_path,
                  image_set,
                  image_transform,
-                 target_transform=CocoAnnotationTransform()):
+                 target_transform):
 
         self.data_path = data_path
         self.image_set = image_set
