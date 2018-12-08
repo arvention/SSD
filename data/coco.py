@@ -67,7 +67,7 @@ class Coco(Dataset):
         self.dataset = COCO(osp.join(data_path,
                                      'Annotations',
                                      'instances_{}.json'.format(image_set)))
-        self.ids = [self.dataset.imgToAnns.keys()]
+        self.ids = list(self.dataset.imgToAnns.keys())
         self.image_transform = image_transform
         self.target_transform = target_transform
 
