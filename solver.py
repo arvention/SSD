@@ -299,37 +299,37 @@ class Solver(object):
                                 self.pretrained_model)
         det_file = osp.join(results_path,
                             'detections.pkl')
+        with torch.no_grad():
+            for i in range(num_images):
+                image, target, h, w = dataset.pull_item(i)
 
-        for i in range(num_images):
-            image, target, h, w = dataset.pull_item(i)
+                image = to_var(image.unsqueeze(0), self.use_gpu)
 
-            image = to_var(image.unsqueeze(0), self.use_gpu)
+                _t['im_detect'].tic()
+                detections = self.model(image).data
+                detect_time = _t['im_detect'].toc(average=False)
 
-            _t['im_detect'].tic()
-            detections = self.model(image).data
-            detect_time = _t['im_detect'].toc(average=False)
+                # skip j = 0 because it is the background class
+                for j in range(1, detections.shape[1]):
+                    dets = detections[0, j, :]
+                    mask = dets[:, 0].gt(0.).expand(5, dets.size(0)).t()
+                    dets = torch.masked_select(dets, mask).view(-1, 5)
+                    if dets.shape[0] == 0:
+                        continue
+                    boxes = dets[:, 1:]
+                    boxes[:, 0] *= w
+                    boxes[:, 2] *= w
+                    boxes[:, 1] *= h
+                    boxes[:, 3] *= h
+                    scores = dets[:, 0].cpu().numpy()
+                    cls_dets = np.hstack((boxes.cpu().numpy(),
+                                          scores[:, np.newaxis])).astype(np.float32,
+                                                                         copy=False)
+                    all_boxes[j][i] = cls_dets
 
-            # skip j = 0 because it is the background class
-            for j in range(1, detections.shape[1]):
-                dets = detections[0, j, :]
-                mask = dets[:, 0].gt(0.).expand(5, dets.size(0)).t()
-                dets = torch.masked_select(dets, mask).view(-1, 5)
-                if dets.shape[0] == 0:
-                    continue
-                boxes = dets[:, 1:]
-                boxes[:, 0] *= w
-                boxes[:, 2] *= w
-                boxes[:, 1] *= h
-                boxes[:, 3] *= h
-                scores = dets[:, 0].cpu().numpy()
-                cls_dets = np.hstack((boxes.cpu().numpy(),
-                                      scores[:, np.newaxis])).astype(np.float32,
-                                                                     copy=False)
-                all_boxes[j][i] = cls_dets
-
-            print('im_detect: {:d}/{:d} {:.3f}s'.format(i + 1,
-                                                        num_images,
-                                                        detect_time))
+                print('im_detect: {:d}/{:d} {:.3f}'.format(i + 1,
+                                                           num_images,
+                                                           detect_time))
 
         with open(det_file, 'wb') as f:
             pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
