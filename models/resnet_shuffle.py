@@ -199,7 +199,7 @@ mbox_config = {
 }
 
 
-def build_shuffle_ssd(mode, new_size, anchors, class_count):
+def build_rshuffle_ssd(mode, new_size, anchors, class_count):
 
     base = resnet50(pretrained=True)
 
