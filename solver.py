@@ -301,7 +301,7 @@ class Solver(object):
         det_file = osp.join(results_path,
                             'detections.pkl')
 
-        times = []
+        detect_times = []
 
         with torch.no_grad():
             for i in range(num_images):
@@ -312,7 +312,7 @@ class Solver(object):
                 _t['im_detect'].tic()
                 detections = self.model(image).data
                 detect_time = _t['im_detect'].toc(average=False)
-                times.append(detect_time)
+                detect_times.append(detect_time)
 
                 # skip j = 0 because it is the background class
                 for j in range(1, detections.shape[1]):
@@ -345,9 +345,18 @@ class Solver(object):
             voc_save(all_boxes, dataset, results_path)
             do_python_eval(results_path, dataset)
 
-        mean_time = mean(times)
-        print('Average time:', mean_time)
-        print('fps:', (1 / mean_time))
+        detect_times = np.asarray(detect_times)
+        detect_times.sort()
+        print('fps[0500]:', (1 / np.mean(detect_times[:500])))
+        print('fps[1000]:', (1 / np.mean(detect_times[:1000])))
+        print('fps[1500]:', (1 / np.mean(detect_times[:1500])))
+        print('fps[2000]:', (1 / np.mean(detect_times[:2000])))
+        print('fps[2500]:', (1 / np.mean(detect_times[:2500])))
+        print('fps[3000]:', (1 / np.mean(detect_times[:3000])))
+        print('fps[3500]:', (1 / np.mean(detect_times[:3500])))
+        print('fps[4000]:', (1 / np.mean(detect_times[:4000])))
+        print('fps[4500]:', (1 / np.mean(detect_times[:4500])))
+        print('fps[all]:', (1 / np.mean(detect_times)))
 
     def test(self):
         """
