@@ -13,6 +13,7 @@ from models.model import get_model
 from loss.loss import get_loss
 from layers.anchor_box import AnchorBox
 from utils.timer import Timer
+from statistics import mean
 
 from data.pascal_voc import save_results as voc_save, do_python_eval
 
@@ -299,6 +300,9 @@ class Solver(object):
                                 self.pretrained_model)
         det_file = osp.join(results_path,
                             'detections.pkl')
+
+        times = []
+
         with torch.no_grad():
             for i in range(num_images):
                 image, target, h, w = dataset.pull_item(i)
@@ -308,6 +312,7 @@ class Solver(object):
                 _t['im_detect'].tic()
                 detections = self.model(image).data
                 detect_time = _t['im_detect'].toc(average=False)
+                times.append(detect_time)
 
                 # skip j = 0 because it is the background class
                 for j in range(1, detections.shape[1]):
@@ -339,6 +344,10 @@ class Solver(object):
         if self.dataset == 'voc':
             voc_save(all_boxes, dataset, results_path)
             do_python_eval(results_path, dataset)
+
+        mean_time = mean(times)
+        print('Average time:', mean_time)
+        print('fps:', (1 / mean_time))
 
     def test(self):
         """
