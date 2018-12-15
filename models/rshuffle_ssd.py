@@ -104,22 +104,22 @@ def get_fusion_module(config, in_channels):
 
     layers = []
     layers += [BasicConv(in_channels=in_channels[0],
-                         out_channels=config[0][1],
-                         kernel_size=config[0][2],
-                         stride=config[0][3],
-                         padding=config[0][4])]
+                         out_channels=config[0][0],
+                         kernel_size=config[0][1],
+                         stride=config[0][2],
+                         padding=config[0][3])]
     layers += [nn.Sequential(BasicConv(in_channels=in_channels[1],
-                                       out_channels=config[1][1],
-                                       kernel_size=config[1][2],
-                                       stride=config[1][3],
-                                       padding=config[1][4]),
+                                       out_channels=config[1][0],
+                                       kernel_size=config[1][1],
+                                       stride=config[1][2],
+                                       padding=config[1][3]),
                              nn.PixelShuffle(upscale_factor=2))]
 
     layers += [nn.Sequential(BasicConv(in_channels=in_channels[2],
-                                       out_channels=config[2][1],
-                                       kernel_size=config[2][2],
-                                       stride=config[2][3],
-                                       padding=config[2][4]),
+                                       out_channels=config[2][0],
+                                       kernel_size=config[2][1],
+                                       stride=config[2][2],
+                                       padding=config[2][3]),
                              nn.PixelShuffle(upscale_factor=4))]
 
     return layers
