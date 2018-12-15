@@ -100,22 +100,22 @@ class ShuffleSSD(nn.Module):
         self.loc_head.apply(fn=xavier_init)
 
 
-def get_fusion_module(config):
+def get_fusion_module(config, in_channels):
 
     layers = []
-    layers += [BasicConv(in_channels=config[0][0],
+    layers += [BasicConv(in_channels=in_channels[0],
                          out_channels=config[0][1],
                          kernel_size=config[0][2],
                          stride=config[0][3],
                          padding=config[0][4])]
-    layers += [nn.Sequential(BasicConv(in_channels=config[1][0],
+    layers += [nn.Sequential(BasicConv(in_channels=in_channels[1],
                                        out_channels=config[1][1],
                                        kernel_size=config[1][2],
                                        stride=config[1][3],
                                        padding=config[1][4]),
                              nn.PixelShuffle(upscale_factor=2))]
 
-    layers += [nn.Sequential(BasicConv(in_channels=config[2][0],
+    layers += [nn.Sequential(BasicConv(in_channels=in_channels[2],
                                        out_channels=config[2][1],
                                        kernel_size=config[2][2],
                                        stride=config[2][3],
@@ -156,13 +156,19 @@ def multibox(config, class_count):
     return class_layers, loc_layers
 
 
+fusion_in_channels = {
+    'basic': [128, 256, 512],
+    'bottleneck': [512, 1024, 2048]
+}
+
+
 fusion_config = {
-    '300': [[512, 512, 3, 1, 0],
-            [1024, 512, 2, 1, 0],
-            [2048, 512, 2, 1, 0]],
-    '512': [[512, 512, 3, 1, 1],
-            [1024, 512, 3, 1, 1],
-            [2048, 512, 3, 1, 1]]
+    '300': [[512, 3, 1, 0],
+            [512, 2, 1, 0],
+            [512, 2, 1, 0]],
+    '512': [[512, 3, 1, 1],
+            [512, 3, 1, 1],
+            [512, 3, 1, 1]]
 }
 
 pyramid_config = {
@@ -201,14 +207,18 @@ mbox_config = {
 
 def build_rshuffle_ssd(mode, new_size, resnet_model, anchors, class_count):
 
+    in_channels = fusion_in_channels['basic']
+
     if resnet_model == '18':
         base = resnet18(pretrained=True)
     elif resnet_model == '34':
         base = resnet34(pretrained=True)
     elif resnet_model == '50':
+        in_channels = fusion_in_channels['bottleneck']
         base = resnet50(pretrained=True)
 
-    fusion_module = get_fusion_module(config=fusion_config[str(new_size)])
+    fusion_module = get_fusion_module(config=fusion_config[str(new_size)],
+                                      in_channels=in_channels)
 
     pyramid_module = get_pyramid_module(config=pyramid_config[str(new_size)])
 
