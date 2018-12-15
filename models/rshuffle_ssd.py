@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from layers.detection import Detect
-from torchvision.models import resnet50
+from torchvision.models import resnet18, resnet34, resnet50
 from layers.block import BasicConv
 from utils.init import xavier_init
 
@@ -199,9 +199,14 @@ mbox_config = {
 }
 
 
-def build_rshuffle_ssd(mode, new_size, anchors, class_count):
+def build_rshuffle_ssd(mode, new_size, resnet_model, anchors, class_count):
 
-    base = resnet50(pretrained=True)
+    if resnet_model == '18':
+        base = resnet18(pretrained=True)
+    elif resnet_model == '34':
+        base = resnet34(pretrained=True)
+    elif resnet_model == '50':
+        base = resnet50(pretrained=True)
 
     fusion_module = get_fusion_module(config=fusion_config[str(new_size)])
 

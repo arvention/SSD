@@ -90,6 +90,8 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, default='SSD',
                         choices=['SSD', 'FSSD', 'RFBNet',
                                  'ShuffleSSD', 'RShuffleSSD'])
+    parser.add_argument('--resnet_model', type=str, default='50',
+                        choices=['18', '34', '50'])
 
     # step size
     parser.add_argument('--counter', type=str, default='iter',

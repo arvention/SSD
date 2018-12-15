@@ -39,6 +39,7 @@ def get_model(config, anchors):
     elif config['model'] == 'RShuffleSSD':
         model = build_rshuffle_ssd(mode=config['mode'],
                                    new_size=config['new_size'],
+                                   resnet_model=config['resnet_model'],
                                    anchors=anchors,
                                    class_count=config['class_count'])
 
