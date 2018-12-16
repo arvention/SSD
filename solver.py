@@ -13,7 +13,6 @@ from models.model import get_model
 from loss.loss import get_loss
 from layers.anchor_box import AnchorBox
 from utils.timer import Timer
-from statistics import mean
 
 from data.pascal_voc import save_results as voc_save, do_python_eval
 
