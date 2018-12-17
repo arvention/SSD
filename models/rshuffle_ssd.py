@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from layers.detection import Detect
-from torchvision.models import resnet18, resnet34, resnet50
+from torchvision.models import resnet18, resnet34, resnet50, resnet101
 from layers.block import BasicConv
 from utils.init import xavier_init
 
@@ -216,6 +216,9 @@ def build_rshuffle_ssd(mode, new_size, resnet_model, anchors, class_count):
     elif resnet_model == '50':
         in_channels = fusion_in_channels['bottleneck']
         base = resnet50(pretrained=True)
+    elif resnet_model == '101':
+        in_channels = fusion_in_channels['bottleneck']
+        base = resnet101(pretrained=True)
 
     fusion_module = get_fusion_module(config=fusion_config[str(new_size)],
                                       in_channels=in_channels)
