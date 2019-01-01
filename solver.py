@@ -185,7 +185,7 @@ class Solver(object):
         count = count - 1
 
         # return loss
-        return class_loss, loc_loss, loss
+        return class_loss, loc_loss, loss, count
 
     def train_iter(self, start):
         step_index = 0
@@ -210,9 +210,9 @@ class Solver(object):
             images = to_var(images, self.use_gpu)
             targets = [to_var(target, self.use_gpu) for target in targets]
 
-            class_loss, loc_loss, loss = self.model_step(images,
-                                                         targets,
-                                                         count)
+            class_loss, loc_loss, loss, count = self.model_step(images,
+                                                                targets,
+                                                                count)
 
             # print out loss log
             if (i + 1) % self.loss_log_step == 0:
