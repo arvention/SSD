@@ -81,6 +81,7 @@ if __name__ == '__main__':
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight_decay', type=float, default=5e-4)
     parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_multiplier', type=int, default=2)
     parser.add_argument('--basenet', type=str,
                         default='vgg16_reducedfc.pth')
     parser.add_argument('--pretrained_model', type=str,

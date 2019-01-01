@@ -151,13 +151,19 @@ class Solver(object):
 
         torch.save(self.model.state_dict(), path)
 
-    def model_step(self, images, targets):
+    def model_step(self, images, targets, count):
         """
         A step for each iteration
         """
 
-        # empty the gradients of the model through the optimizer
-        self.optimizer.zero_grad()
+        if count == 0:
+            # update parameters
+            self.optimizer.step()
+
+            # empty the gradients of the model through the optimizer
+            self.optimizer.zero_grad()
+
+            count = self.batch_multiplier
 
         # forward pass
         class_preds, loc_preds = self.model(images)
@@ -173,10 +179,10 @@ class Solver(object):
         class_loss, loc_loss, loss = losses
 
         # compute gradients using back propagation
+        loss = loss / self.batch_multiplier
         loss.backward()
 
-        # update parameters
-        self.optimizer.step()
+        count = count - 1
 
         # return loss
         return class_loss, loc_loss, loss
@@ -185,6 +191,7 @@ class Solver(object):
         step_index = 0
         start_time = time.time()
         batch_iterator = iter(self.train_loader)
+        count = 0
 
         for i in range(start, self.num_iterations):
 
@@ -203,7 +210,9 @@ class Solver(object):
             images = to_var(images, self.use_gpu)
             targets = [to_var(target, self.use_gpu) for target in targets]
 
-            class_loss, loc_loss, loss = self.model_step(images, targets)
+            class_loss, loc_loss, loss = self.model_step(images,
+                                                         targets,
+                                                         count)
 
             # print out loss log
             if (i + 1) % self.loss_log_step == 0:
