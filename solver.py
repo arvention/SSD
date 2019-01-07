@@ -395,8 +395,8 @@ class Solver(object):
                 boxes = boxes.cpu().numpy()
                 scores = scores.cpu().numpy()
                 # scale each detection back up to the image
-                scale = torch.Tensor([image.shape[1], image.shape[0],
-                                      image.shape[1], image.shape[0]]).cpu().numpy()
+                scale = torch.Tensor([image.shape[3], image.shape[2],
+                                      image.shape[3], image.shape[2]]).cpu().numpy()
                 boxes *= scale
 
                 _t['misc'].tic()
