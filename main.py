@@ -3,7 +3,7 @@ import argparse
 from solver import Solver
 from data.data_loader import get_loader
 from torch.backends import cudnn
-from utils.utils import mkdir
+from utils.genutils import mkdir
 from datetime import datetime
 import zipfile
 import torch
