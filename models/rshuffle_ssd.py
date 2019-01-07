@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from layers.detection2 import Detect
+from layers.detection import Detect
 from torchvision.models import resnet18, resnet34, resnet50, resnet101
 from layers.block import BasicConv
 from utils.init import xavier_init
@@ -34,7 +34,7 @@ class ShuffleSSD(nn.Module):
 
         if mode == 'test':
             self.softmax = nn.Softmax(dim=-1)
-            self.detect = Detect(class_count)
+            self.detect = Detect(class_count, 200, 0.01, 0.45)
 
     def forward(self, x):
         sources = []

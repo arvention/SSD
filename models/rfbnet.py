@@ -2,7 +2,7 @@ import os
 import os.path as osp
 import torch
 import torch.nn as nn
-from layers.detection2 import Detect
+from layers.detection import Detect
 from models.vgg import vgg, base_config
 from layers.block import BasicConv, BasicRFB, BasicRFB_a
 from utils.init import xavier_init
@@ -40,7 +40,7 @@ class RFBNet(nn.Module):
 
         if mode == 'test':
             self.softmax = nn.Softmax(dim=-1)
-            self.detect = Detect(class_count)
+            self.detect = Detect(class_count, 200, 0.01, 0.45)
 
     def forward(self, x):
         sources = []

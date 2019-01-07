@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from layers.l2_norm import L2Norm
-from layers.detection2 import Detect
+from layers.detection import Detect
 from models.vgg import vgg, base_config
 from utils.init import xavier_init
 
@@ -35,7 +35,7 @@ class SSD(nn.Module):
 
         if mode == 'test':
             self.softmax = nn.Softmax(dim=-1)
-            self.detect = Detect(class_count)
+            self.detect = Detect(class_count, 200, 0.01, 0.45)
 
     def forward(self, x):
         sources = []
