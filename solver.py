@@ -365,7 +365,7 @@ class Solver(object):
         print('fps[3500]:', (1 / np.mean(detect_times[:3500])))
         print('fps[4000]:', (1 / np.mean(detect_times[:4000])))
         print('fps[4500]:', (1 / np.mean(detect_times[:4500])))
-        print('fps[all]:', (1 / np.mean(detect_times)))
+        print('fps[all]:', (1 / np.mean(detect_times[:-1])))
 
     def eval_new(self, dataset, top_k, threshold):
         num_images = len(dataset)
