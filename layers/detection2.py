@@ -23,7 +23,7 @@ class Detect(Function):
 
         self.num_priors = prior_data.size(0)
         self.boxes = torch.zeros(num, self.num_priors, 4)
-        self.scores = torch.zeros(num, self.num_priors, self.num_classes)
+        self.scores = torch.zeros(num, self.num_priors, self.class_count)
 
         if num == 1:
             # size batch x num_classes x num_priors
@@ -31,9 +31,9 @@ class Detect(Function):
 
         else:
             conf_preds = conf_data.view(num, self.num_priors,
-                                        self.num_classes)
+                                        self.class_count)
             self.boxes.expand(num, self.num_priors, 4)
-            self.scores.expand(num, self.num_priors, self.num_classes)
+            self.scores.expand(num, self.num_priors, self.class_count)
 
         # Decode predictions into bboxes.
         for i in range(num):
