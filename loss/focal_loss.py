@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.utils import to_var, one_hot_embedding
+from utils.genutils import to_var, one_hot_embedding
 from utils.bbox_utils import match
 
 
