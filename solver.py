@@ -8,6 +8,7 @@ import pickle
 import torch.optim as optim
 from tqdm import tqdm
 from utils.utils import to_var
+from utils.nms_wrapper import nms
 
 from models.model import get_model
 from loss.loss import get_loss
@@ -365,6 +366,103 @@ class Solver(object):
         print('fps[4000]:', (1 / np.mean(detect_times[:4000])))
         print('fps[4500]:', (1 / np.mean(detect_times[:4500])))
         print('fps[all]:', (1 / np.mean(detect_times)))
+
+    def eval_new(self, dataset, top_k, threshold):
+        num_images = len(dataset)
+        all_boxes = [[[] for _ in range(num_images)]
+                     for _ in range(self.class_count)]
+
+        _t = {'im_detect': Timer(), 'misc': Timer()}
+        results_path = osp.join(self.result_save_path,
+                                self.pretrained_model)
+        det_file = os.path.join(results_path, 'detections.pkl')
+
+        detect_times = []
+        nms_times = []
+
+        with torch.no_grad():
+            for i in range(num_images):
+                image, target, h, w = dataset.pull_item(i)
+                image = to_var(image.unsqueeze(0), self.use_gpu)
+
+                _t['im_detect'].tic()
+                boxes, scores = self.model(image).data
+                detect_time = _t['im_detect'].toc(average=False)
+                detect_times.append(detect_time)
+                boxes = boxes[0]
+                scores = scores[0]
+
+                boxes = boxes.cpu().numpy()
+                scores = scores.cpu().numpy()
+                # scale each detection back up to the image
+                scale = torch.Tensor([image.shape[1], image.shape[0],
+                                      image.shape[1], image.shape[0]]).cpu().numpy()
+                boxes *= scale
+
+                _t['misc'].tic()
+
+                for j in range(1, self.num_classes):
+                    inds = np.where(scores[:, j] > threshold)[0]
+                    if len(inds) == 0:
+                        all_boxes[j][i] = np.empty([0, 5], dtype=np.float32)
+                        continue
+                    c_bboxes = boxes[inds]
+                    c_scores = scores[inds, j]
+                    c_dets = np.hstack((c_bboxes, c_scores[:, np.newaxis])).astype(
+                        np.float32, copy=False)
+
+                    keep = nms(c_dets, 0.45, force_cpu=False)
+                    keep = keep[:50]
+                    c_dets = c_dets[keep, :]
+                    all_boxes[j][i] = c_dets
+                if top_k > 0:
+                    image_scores = np.hstack([all_boxes[j][i][:, -1] for j in range(1, self.class_count)])
+                    if len(image_scores) > top_k:
+                        image_thresh = np.sort(image_scores)[-top_k]
+                        for j in range(1, self.class_count):
+                            keep = np.where(all_boxes[j][i][:, -1] >= image_thresh)[0]
+                            all_boxes[j][i] = all_boxes[j][i][keep, :]
+
+                nms_time = _t['misc'].toc(average=False)
+                nms_times.append(nms_time)
+
+                print('im_detect: {:d}/{:d} {:.3f}s {:.3f}s'
+                      .format(i + 1, num_images, detect_time, nms_time))
+                _t['im_detect'].clear()
+                _t['misc'].clear()
+
+        with open(det_file, 'wb') as f:
+            pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
+
+        print('Evaluating detections')
+        if self.dataset == 'voc':
+            voc_save(all_boxes, dataset, results_path)
+            do_python_eval(results_path, dataset)
+
+        detect_times = np.asarray(detect_times)
+        nms_times = np.asarray(nms_times)
+        total_times = np.add(detect_times, nms_times)
+
+        detect_times.sort()
+        print('fps[1000]:', (1 / np.mean(detect_times[:1000])))
+        print('fps[2000]:', (1 / np.mean(detect_times[:2000])))
+        print('fps[3000]:', (1 / np.mean(detect_times[:3000])))
+        print('fps[4000]:', (1 / np.mean(detect_times[:4000])))
+        print('fps[all]:', (1 / np.mean(detect_times)))
+
+        nms_times.sort()
+        print('fps[1000]:', (1 / np.mean(nms_times[:1000])))
+        print('fps[2000]:', (1 / np.mean(nms_times[:2000])))
+        print('fps[3000]:', (1 / np.mean(nms_times[:3000])))
+        print('fps[4000]:', (1 / np.mean(nms_times[:4000])))
+        print('fps[all]:', (1 / np.mean(nms_times)))
+
+        total_times.sort()
+        print('fps[1000]:', (1 / np.mean(total_times[:1000])))
+        print('fps[2000]:', (1 / np.mean(total_times[:2000])))
+        print('fps[3000]:', (1 / np.mean(total_times[:3000])))
+        print('fps[4000]:', (1 / np.mean(total_times[:4000])))
+        print('fps[all]:', (1 / np.mean(total_times)))
 
     def test(self):
         """
