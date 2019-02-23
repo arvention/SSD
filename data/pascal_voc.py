@@ -70,15 +70,15 @@ class PascalVOC(Dataset):
         self.keep_difficult = keep_difficult
 
         self.annotation_path = osp.join('%s',
-                                        self.mode,
+                                        '%s',
                                         'Annotations',
                                         '%s.xml')
         self.image_path = osp.join('%s',
-                                   self.mode,
+                                   '%s',
                                    'JPegImages',
                                    '%s.jpg')
         self.text_path = osp.join('%s',
-                                  self.mode,
+                                  '%s',
                                   'ImageSets',
                                   'Main',
                                   '%s.txt')
@@ -86,9 +86,9 @@ class PascalVOC(Dataset):
         self.ids = []
         for (year, name) in self.image_sets:
             path = osp.join(self.data_path, 'VOC%s' % year)
-            with open(self.text_path % (path, name)) as f:
+            with open(self.text_path % (path, name, name)) as f:
                 for line in f:
-                    self.ids.append((path, line.strip()))
+                    self.ids.append((path, name, line.strip()))
 
     def __len__(self):
         """
