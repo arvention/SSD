@@ -298,76 +298,7 @@ class Solver(object):
                                                    loc_loss.item(),
                                                    loss.item()))
 
-    def eval(self, dataset, top_k, threshold):
-        num_images = len(dataset)
-        all_boxes = [[[] for _ in range(num_images)]
-                     for _ in range(self.class_count)]
-
-        # timers
-        _t = {'im_detect': Timer(), 'misc': Timer()}
-        results_path = osp.join(self.result_save_path,
-                                self.pretrained_model)
-        det_file = osp.join(results_path,
-                            'detections.pkl')
-
-        detect_times = []
-
-        with torch.no_grad():
-            for i in range(num_images):
-                image, target, h, w = dataset.pull_item(i)
-
-                image = to_var(image.unsqueeze(0), self.use_gpu)
-
-                _t['im_detect'].tic()
-                detections = self.model(image).data
-                detect_time = _t['im_detect'].toc(average=False)
-                detect_times.append(detect_time)
-
-                # skip j = 0 because it is the background class
-                for j in range(1, detections.shape[1]):
-                    dets = detections[0, j, :]
-                    mask = dets[:, 0].gt(0.).expand(5, dets.size(0)).t()
-                    dets = torch.masked_select(dets, mask).view(-1, 5)
-                    if dets.shape[0] == 0:
-                        continue
-                    boxes = dets[:, 1:]
-                    boxes[:, 0] *= w
-                    boxes[:, 2] *= w
-                    boxes[:, 1] *= h
-                    boxes[:, 3] *= h
-                    scores = dets[:, 0].cpu().numpy()
-                    cls_dets = np.hstack((boxes.cpu().numpy(),
-                                          scores[:, np.newaxis])).astype(np.float32,
-                                                                         copy=False)
-                    all_boxes[j][i] = cls_dets
-
-                print('im_detect: {:d}/{:d} {:.3f}'.format(i + 1,
-                                                           num_images,
-                                                           detect_time))
-
-        with open(det_file, 'wb') as f:
-            pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
-
-        print('Evaluating detections')
-
-        if self.dataset == 'voc':
-            voc_save(all_boxes, dataset, results_path)
-            do_python_eval(results_path, dataset)
-
-        detect_times = np.asarray(detect_times)
-        detect_times.sort()
-        print('fps[0500]:', (1 / np.mean(detect_times[:500])))
-        print('fps[1000]:', (1 / np.mean(detect_times[:1000])))
-        print('fps[1500]:', (1 / np.mean(detect_times[:1500])))
-        print('fps[2000]:', (1 / np.mean(detect_times[:2000])))
-        print('fps[2500]:', (1 / np.mean(detect_times[:2500])))
-        print('fps[3000]:', (1 / np.mean(detect_times[:3000])))
-        print('fps[3500]:', (1 / np.mean(detect_times[:3500])))
-        print('fps[4000]:', (1 / np.mean(detect_times[:4000])))
-        print('fps[4500]:', (1 / np.mean(detect_times[:4500])))
-        print('fps[all]:', (1 / np.mean(detect_times[:-1])))
-
-    def eval_new(self, dataset, max_per_image, threshold):
+    def eval(self, dataset, max_per_image, threshold):
         num_images = len(dataset)
         all_boxes = [[[] for _ in range(num_images)]
                      for _ in range(self.class_count)]
@@ -395,8 +326,7 @@ class Solver(object):
                 boxes = boxes.cpu().numpy()
                 scores = scores.cpu().numpy()
                 # scale each detection back up to the image
-                scale = torch.Tensor([image.shape[3], image.shape[2],
-                                      image.shape[3], image.shape[2]]).cpu().numpy()
+                scale = torch.Tensor([w, h, w, h]).cpu().numpy()
                 boxes *= scale
 
                 _t['misc'].tic()
@@ -450,9 +380,6 @@ class Solver(object):
         testing process
         """
         self.model.eval()
-        # self.eval(dataset=self.test_loader.dataset,
-        #           top_k=5,
-        #           threshold=0.01)
-        self.eval_new(dataset=self.test_loader.dataset,
-                      max_per_image=200,
-                      threshold=0.005)
+        self.eval(dataset=self.test_loader.dataset,
+                  max_per_image=300,
+                  threshold=0.005)

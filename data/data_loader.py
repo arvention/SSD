@@ -8,7 +8,9 @@ from data.augmentations import Augmentations, BaseTransform
 
 VOC_CONFIG = {
     '0712': ([('2007', 'trainval'), ('2012', 'trainval')],
-             [('2007', 'test')])
+             [('2007', 'test')]),
+    '0712+': ([('2007', 'trainval'), ('2012', 'trainval'), ('2007', 'test')],
+              [('2012', 'test')])
 }
 
 COCO_CONFIG = {
