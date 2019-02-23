@@ -81,7 +81,7 @@ if __name__ == '__main__':
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight_decay', type=float, default=5e-4)
     parser.add_argument('--batch_size', type=int, default=32)
-    parser.add_argument('--batch_multiplier', type=int, default=2)
+    parser.add_argument('--batch_multiplier', type=int, default=1)
     parser.add_argument('--basenet', type=str,
                         default='vgg16_reducedfc.pth')
     parser.add_argument('--pretrained_model', type=str,
@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     # pascal voc dataset
     parser.add_argument('--voc_config', type=str, default='0712',
-                        choices=['0712'])
+                        choices=['0712', '0712+'])
     parser.add_argument('--voc_data_path', type=str,
                         default='../../data/PascalVOC/')
 
